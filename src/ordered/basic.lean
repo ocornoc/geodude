@@ -67,8 +67,8 @@ begin
   rwa [line.single_self, set.mem_singleton_iff, eq_comm] at h
 end
 
-/-- For any line, there exists a point that's not collinear to it. -/
-theorem ex_not_collin [ordered_geo α 2] (p q : α) : ∃ r, r ∉ line p q :=
+/-- For any line, there exists a point that's not in it. -/
+theorem ex_not_on_line [ordered_geo α 2] (p q : α) : ∃ r, r ∉ line p q :=
 begin
   let l := [p, q],
   have hl : l.length = (1 : fin 2).val.succ := dec_trivial,
