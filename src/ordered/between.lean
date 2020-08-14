@@ -214,7 +214,7 @@ rfl
 theorem single_self (x : α) : ray x x = {x} :=
 begin
   rw ray_def,
-  funext y,
+  funext,
   apply or_eq_of_eq_false_left,
   apply eq_false_intro,
   change ¬ (_ ∨ _),
