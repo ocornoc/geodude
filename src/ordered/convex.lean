@@ -112,6 +112,20 @@ theorem iff_ssubs_of_convex {s t : set α} (hs : is_convex s) (ht : is_convex t)
   s ⊂ t ↔ convex_hull s ⊂ convex_hull t :=
 by rw is_convex.convex_def at hs ht; rwa [hs, ht]
 
+@[simp]
+theorem of_singleton (p : α) : @convex_hull α _ {p} = {p} :=
+begin
+  funext,
+  apply propext,
+  split,
+  all_goals { intro h },
+    { induction h with _ h₂ _ _ _ _ _ h hv₁ hv₂, { assumption },
+      rw [←@set.mem_def _ _ {p}, set.mem_singleton_iff] at hv₁ hv₂,
+      rw [hv₁, hv₂] at h,
+      exact interval.eq_of_mem_same h },
+    { exact of_set h }
+end
+
 end convex_hull
 
 namespace is_convex

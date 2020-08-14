@@ -84,6 +84,18 @@ begin
   exact h (convex_hull.of_set $ or.inr $ list.mem_singleton_self _)
 end
 
+/-- For any plane, there exists a point that's not in it. -/
+theorem ex_not_on_plane [ordered_geo α 3] (p q r : α) :
+  ∃ x, x ∉ convex_hull {y | y ∈ [p, q, r]} :=
+begin
+  let l := [p, q, r],
+  have hl : l.length = (2 : fin 3).val.succ := dec_trivial,
+  have h := dimality ⟨l, hl⟩,
+  cases h with w h,
+  use w,
+  exact h.not_mem_of_indep
+end
+
 end ordered_geo
 end
 

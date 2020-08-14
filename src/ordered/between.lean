@@ -180,6 +180,9 @@ segment.ssubs_intrv _ _
 theorem swap (x y : α) : interval x y = interval y x :=
 by simp only [intrv_def', segment.swap, set_ins_comm]
 
+theorem eq_of_mem_same {p q : α} (h : p ∈ interval q q) : p = q :=
+by rw single_self at h; exact h
+
 end interval
 
 namespace ray
@@ -277,4 +280,36 @@ begin
 end
 
 end line
+
+namespace collinear
+
+@[simp]
+theorem collin_def (p q r : α) : collinear p q r = (r ∈ line p q) :=
+rfl
+
+theorem of_left (p q : α) : collinear p q p :=
+line.end_mem_line_left _ _
+
+theorem of_right (p q : α) : collinear p q q :=
+line.end_mem_line_right _ _
+
+theorem of_same (p : α) : collinear p p p :=
+of_left p p
+
+end collinear
+
+namespace lin_indep
+
+@[simp]
+theorem indep_def (p : α) (s : set α) :
+  lin_indep p s = ∀ l r ∈ s, ¬ collinear l r p :=
+rfl
+
+theorem not_indep_of_mem {p : α} {s : set α} (hp : p ∈ s) : ¬ lin_indep p s :=
+λ h, (h p p hp hp) $ collinear.of_same p
+
+theorem not_mem_of_indep {p : α} {s : set α} (hp : lin_indep p s) : p ∉ s :=
+λ h, not_indep_of_mem h hp
+
+end lin_indep
 end
