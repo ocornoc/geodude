@@ -348,6 +348,10 @@ universe u
 parameters {α : Type u} [has_betweenness α]
 
 @[simp]
+theorem is_convex.convex_def (s : set α) : is_convex s = (convex_hull s = s) :=
+rfl
+
+@[simp]
 theorem opening.opening_def (s : set α) :
   opening s = s ∩ ⋃ v₁ v₂ ∈ s, segment v₁ v₂ :=
 rfl
@@ -421,15 +425,21 @@ begin
     { exact intrv hv₁ hv₂ h }
 end
 
-/- prove that if a convex set ⊂ convex set, then their hulls respect that -/
+/-- If `S₁ ⊂ S₂` and both are convex, then the convex hull of `S₁` is also a
+    strict subset of the convex hull of `S₂`. -/
+theorem is_mono_convex {s t : set α} (hs : is_convex s) (ht : is_convex t) :
+  s ⊂ t → convex_hull s ⊂ convex_hull t :=
+λ h, by rw is_convex.convex_def at hs ht; rwa [hs, ht]
+
+/-- If `S₁` and `S₂` are both convex, then `S₁ ⊂ S₂` iff the same is true of
+    their convex hulls. -/
+theorem iff_ssubs_of_convex {s t : set α} (hs : is_convex s) (ht : is_convex t) :
+  s ⊂ t ↔ convex_hull s ⊂ convex_hull t :=
+by rw is_convex.convex_def at hs ht; rwa [hs, ht]
 
 end convex_hull
 
 namespace is_convex
-
-@[simp]
-theorem convex_def (s : set α) : is_convex s = (convex_hull s = s) :=
-rfl
 
 /-- Every convex hull is convex. -/
 theorem hulls_are_convex (s : set α) : is_convex (convex_hull s) :=
