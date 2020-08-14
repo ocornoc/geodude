@@ -28,13 +28,6 @@ def bound (s : set α) : Prop :=
   (∃ p ∈ ray v₁ v₂, p ∉ convex_hull s)
   ∧ (∃ q ∈ ray v₂ v₁, q ∉ convex_hull s)
 
-/-- The opening of a set `S` is the intersection of `S` with all `segment`s of
-    any two points in `S`. For `S` over dense types, this will create an open
-    set. -/
-def opening (s : set α) : set α := s ∩ ⋃ v₁ v₂ ∈ s, segment v₁ v₂
-/-- The boundary of a set `S` is `S` with its opening removed. -/
-def boundary (s : set α) : set α := s \ opening s
-
 end
 
 section
@@ -44,18 +37,6 @@ parameters {α : Type u} [has_betweenness α]
 @[simp]
 theorem is_convex.convex_def (s : set α) : is_convex s = (convex_hull s = s) :=
 rfl
-
-@[simp]
-theorem opening.opening_def (s : set α) :
-  opening s = s ∩ ⋃ v₁ v₂ ∈ s, segment v₁ v₂ :=
-rfl
-
-@[simp]
-theorem boundary.boundary_def (s : set α) : boundary s = s \ opening s :=
-rfl
-
-theorem boundary.subs_s (s : set α) : boundary s ⊆ s :=
-λ _, and.left
 
 namespace convex_hull
 /-- `x` is in a convex hull of a set iff it's in the original set or it is on a
