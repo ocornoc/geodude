@@ -23,14 +23,19 @@ theorem dimensionality.dim_def (d : ℕ) (vs : vector α d.succ) :
   dimensionality d vs = ∃ p, lin_indep p $ convex_hull {z | z ∈ vs.val} :=
 rfl
 
+/-- `▵PQR` is a non-degenerate triangle if `P`, `Q`, and `R` are all collinear
+    to each other. -/
+def tri_nondegen (p q r : α) : Prop :=
+collinear p q r ∧ collinear r p q ∧ collinear q r p
+
 end
 
 /-- Ordered geometry, without an axiom of dimension. -/
 class {u} ordered_geo_nodim (α : Type u) extends has_betweenness α :=
 (collin {p q r x : α} : r ≠ x → r ∈ line p q → x ∈ line p q →
   p ∈ line r x)
-(pasch {p q r x y : α} : ¬ triangle.degenerate p q r →
-  between q r x → between r y p → ∃ z ∈ line x y, between p z q)
+(pasch {p q r x y : α} : ¬ tri_nondegen p q r → between q r x →
+  between r y p → ∃ z ∈ line x y, between p z q)
 -- not all of the axioms btw, it's just a placeholder
 
 /-- Ordered geometry, indexed by a dimension `d` for which the appropriate

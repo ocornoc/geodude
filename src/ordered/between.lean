@@ -94,27 +94,6 @@ def collinear (p q r : α) : Prop := r ∈ line p q
 def lin_indep (p : α) (s : set α) : Prop :=
 ∀ l r ∈ s, ¬ collinear l r p
 
-
-/-- The edges of the triangle `▵PQR` -/
-def triangle (p q r : α) : set α :=
-interval p q ∪ interval q r ∪ interval r p
-
-/-- Whether a triangle is degenerate (any vertices are collinear) -/
-def triangle.degenerate (p q r : α) : Prop :=
-collinear p q r ∨ collinear r p q ∨ collinear q r p
-
-/-- The points between (and including) the edges of a triangle -/
-def triangle.inside (p q r : α) : set α :=
-⋃ v₁ v₂ ∈ triangle p q r, line v₁ v₂
-
-/-- The points strictly between the edges of a triangle -/
-def triangle.strict_inside (p q r : α) : set α :=
-triangle.inside p q r \ triangle p q r
-
-/-- A plane, as defined by a nondegenerate triangle. -/
-def plane {p q r : α} : ¬ triangle.degenerate p q r → set α :=
-λ _, {z | ∃ l r ∈ triangle p q r, collinear l r z}
-
 end
 
 section
