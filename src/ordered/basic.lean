@@ -29,7 +29,6 @@ end
 class {u} ordered_geo_nodim (α : Type u) extends has_betweenness α :=
 (collin {p q r x : α} : r ≠ x → r ∈ line p q → x ∈ line p q →
   p ∈ line r x)
---(ex_not_collin (p q : α) : ∃ r, r ∉ line p q)
 (pasch {p q r x y : α} : ¬ triangle.degenerate p q r →
   between q r x → between r y p → ∃ z ∈ line x y, between p z q)
 -- not all of the axioms btw, it's just a placeholder
