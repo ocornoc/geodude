@@ -323,8 +323,7 @@ def bound (s : set α) : Prop :=
     any two points in `S`. For `S` over dense types, this will create an open
     set. -/
 def opening (s : set α) : set α := s ∩ ⋃ v₁ v₂ ∈ s, segment v₁ v₂
-/-- The boundary of a set `S` is the intersection of `S` and the complement of
-    its opening. -/
+/-- The boundary of a set `S` is `S` with its opening removed. -/
 def boundary (s : set α) : set α := s \ opening s
 
 /-- The dimensionality proposition states that, for a specified dimension `d`,
