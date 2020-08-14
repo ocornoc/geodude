@@ -81,7 +81,7 @@ def segment (x y : α) : set α := {z | between x z y}
 /-- A line segment including the endpoints -/
 def interval (x y : α) : set α := segment x y ∪ {x, y}
 
-/-- The ray from `x` to `y`. Excludes `x`. -/
+/-- The ray (or half line) from `x` to `y`. Excludes `x`. -/
 def ray (x y : α) : set α := {z | between z y x} ∪ segment x y ∪ {y}
 
 /-- A line through `x` and `y` -/
