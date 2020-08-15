@@ -59,9 +59,9 @@ instance all_lower {d₁ : ℕ} [ordered_geo α d₁] {d₂ : ℕ} (h : d₂ < d
 end⟩
 
 /-- For any point, there exists another point that's not equal to it. -/
-theorem ex_not_eq [ordered_geo α 1] (p : α) : ∃ q, p ≠ q :=
+theorem ex_not_eq {d : ℕ} [ordered_geo α $ d + 1] (p : α) : ∃ q, p ≠ q :=
 begin
-  have h := dimality (dec_trivial : 0 < 1) ⟨[p], dec_trivial⟩,
+  have h := dimality (dec_trivial : 0 < d + 1) ⟨[p], dec_trivial⟩,
   cases h with w h,
   use w,
   simp only [list.mem_singleton] at h,
@@ -71,9 +71,10 @@ begin
 end
 
 /-- For any line, there exists a point that's not in it. -/
-theorem ex_not_on_line [ordered_geo α 2] (p q : α) : ∃ r, r ∉ line p q :=
+theorem ex_not_on_line {d : ℕ} [ordered_geo α $ d + 2] (p q : α) :
+  ∃ r, r ∉ line p q :=
 begin
-  have h := dimality (dec_trivial : 1 < 2) ⟨[p, q], dec_trivial⟩,
+  have h := dimality (dec_trivial : 1 < d + 2) ⟨[p, q], dec_trivial⟩,
   cases h with w h,
   use w,
   specialize h p q (convex_hull.of_set $ or.inl rfl),
@@ -81,10 +82,10 @@ begin
 end
 
 /-- For any plane, there exists a point that's not in it. -/
-theorem ex_not_on_plane [ordered_geo α 3] (p q r : α) :
+theorem ex_not_on_plane {d : ℕ} [ordered_geo α $ d + 3] (p q r : α) :
   ∃ x, x ∉ convex_hull {y | y ∈ [p, q, r]} :=
 begin
-  have h := dimality (dec_trivial : 2 < 3) ⟨[p, q, r], dec_trivial⟩,
+  have h := dimality (dec_trivial : 2 < d + 3) ⟨[p, q, r], dec_trivial⟩,
   cases h with w h,
   use w,
   exact h.not_mem_of_indep
