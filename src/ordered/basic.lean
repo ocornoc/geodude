@@ -41,7 +41,7 @@ class {u} ordered_geo_nodim (α : Type u) extends has_betweenness α :=
 /-- Ordered geometry, indexed by a dimension `d` for which the appropriate
     axioms of dimensionality apply for any list of points at most `d` long. -/
 class {u} ordered_geo (α : Type u) (d : ℕ) extends ordered_geo_nodim α :=
-(dimality {d' : fin d} (vs : vector α d'.val.succ) : dimensionality d'.val vs)
+(dimality {d' : ℕ} (h : d' < d) (vs : vector α d'.succ) : dimensionality d' vs)
 
 class {u} ordered_geo_inf (α : Type u) extends ordered_geo_nodim α :=
 (inf_dimality {d : ℕ} (vs : vector α d.succ) : dimensionality d vs)
@@ -61,9 +61,7 @@ end⟩
 /-- For any point, there exists another point that's not equal to it. -/
 theorem ex_not_eq [ordered_geo α 1] (p : α) : ∃ q, p ≠ q :=
 begin
-  let l := [p],
-  have hl : l.length = (0 : fin 1).val.succ := dec_trivial,
-  have h := dimality ⟨l, hl⟩,
+  have h := dimality (dec_trivial : 0 < 1) ⟨[p], dec_trivial⟩,
   cases h with w h,
   use w,
   simp only [list.mem_singleton] at h,
@@ -75,9 +73,7 @@ end
 /-- For any line, there exists a point that's not in it. -/
 theorem ex_not_on_line [ordered_geo α 2] (p q : α) : ∃ r, r ∉ line p q :=
 begin
-  let l := [p, q],
-  have hl : l.length = (1 : fin 2).val.succ := dec_trivial,
-  have h := dimality ⟨l, hl⟩,
+  have h := dimality (dec_trivial : 1 < 2) ⟨[p, q], dec_trivial⟩,
   cases h with w h,
   use w,
   specialize h p q (convex_hull.of_set $ or.inl rfl),
@@ -88,9 +84,7 @@ end
 theorem ex_not_on_plane [ordered_geo α 3] (p q r : α) :
   ∃ x, x ∉ convex_hull {y | y ∈ [p, q, r]} :=
 begin
-  let l := [p, q, r],
-  have hl : l.length = (2 : fin 3).val.succ := dec_trivial,
-  have h := dimality ⟨l, hl⟩,
+  have h := dimality (dec_trivial : 2 < 3) ⟨[p, q, r], dec_trivial⟩,
   cases h with w h,
   use w,
   exact h.not_mem_of_indep
