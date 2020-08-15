@@ -23,26 +23,41 @@ theorem dimensionality.dim_def (d : ℕ) (vs : vector α d.succ) :
   dimensionality d vs = ∃ p, lin_indep p $ convex_hull {z | z ∈ vs.val} :=
 rfl
 
-/-- `▵PQR` is a non-degenerate triangle if `P`, `Q`, and `R` are all
-    non-collinear to each other. -/
-def tri_nondegen (p q r : α) : Prop :=
-¬ collinear p q r ∧ ¬ collinear r p q ∧ ¬ collinear q r p
+/-- A simplex is nondegenerate if, for every two endpoints and point `p`, if
+    both endpoints are distinct from `p`, then they're distinct from each other
+    and all three points are not collinear. -/
+def nondegen_simplex (l : list α) : Prop :=
+∀ v₁ v₂ v₃ ∈ l, v₁ ≠ v₂ → v₂ ≠ v₃ → v₁ ≠ v₃ ∧ ¬ collinear v₁ v₂ v₃
+
+/-- For any set `S`, `S₁` and `S₂` form a dependent bipartition of `S` iff
+    their union `S₁ ∪ S₂ = S` and there is no point in one that is between two
+    points of another. -/
+def dep_biparition (s s₁ s₂ : set α) : Prop :=
+s₁ ∪ s₂ = s ∧ (∀ p ∈ s₁, ¬ ∃ q r ∈ s₂, between q p r) ∧
+  (∀ p ∈ s₂, ¬ ∃ q r ∈ s₁, between q p r)
 
 end
 
 /-- Ordered geometry, without an axiom of dimension. -/
 class {u} ordered_geo_nodim (α : Type u) extends has_betweenness α :=
-(collin {p q r x : α} : r ≠ x → r ∈ line p q → x ∈ line p q →
-  p ∈ line r x)
-(pasch {p q r x y : α} : ¬ tri_nondegen p q r → between q r x →
-  between r y p → ∃ z ∈ line x y, between p z q)
--- not all of the axioms btw, it's just a placeholder
+(pasch₁ {v₁ v₂ : α} (v₃ v₄ ∈ line v₁ v₂) : v₃ ≠ v₄ → v₁ ∈ line v₃ v₄)
+(pasch₂ {v₁ v₂ v₃ v₄ v₅ : α} : ¬ nondegen_simplex [v₁, v₂, v₃] → between v₂ v₃ v₄ →
+  between v₃ v₅ v₂ → ∃ z ∈ line v₄ v₅, between v₁ z v₂)
+(dedekind {p q : α} {s₁ s₂ : set α} : nonempty s₁ → nonempty s₂ →
+  dep_biparition (line p q) s₁ s₂ →
+    (∃ v₁ ∈ s₁, ∀ (v₂ ∈ s₁ \ {v₁}) (v₃ ∈ s₂), between v₂ v₁ v₃)
+    ∨ (∃ v₁ ∈ s₂, ∀ (v₂ ∈ s₂ \ {v₁}) (v₃ ∈ s₁), between v₂ v₁ v₃))
 
 /-- Ordered geometry, indexed by a dimension `d` for which the appropriate
-    axioms of dimensionality apply for any list of points at most `d` long. -/
+    axioms of dimensionality apply for any nonempty list of points at most
+    `d+1` long. -/
 class {u} ordered_geo (α : Type u) (d : ℕ) extends ordered_geo_nodim α :=
 (dimality {d' : ℕ} (h : d' < d) (vs : vector α d'.succ) : dimensionality d' vs)
+(all_in_space : ∀ {vs : vector α (d + 2)}, nondegen_simplex vs.val →
+  ∀ v₁, ∃ v₂ v₃ ∈ convex_hull {p | p ∈ vs.val}, collinear v₁ v₂ v₃)
 
+/-- An infinite ordered geometry, with the property that the axiom of
+    dimensionality holds for any dimension. -/
 class {u} ordered_geo_inf (α : Type u) extends ordered_geo_nodim α :=
 (inf_dimality {d : ℕ} (vs : vector α d.succ) : dimensionality d vs)
 
@@ -50,13 +65,6 @@ section
 universe u
 parameter {α : Type u}
 namespace ordered_geo
-/-- If `α` is an ordered geometry in dimension `d₁`, then it's also an ordered
-    geometry in every dimension `d₂ < d₁`. -/
-instance all_lower {d₁ : ℕ} [ordered_geo α d₁] {d₂ : ℕ} (h : d₂ < d₁) : ordered_geo α d₂ :=
-⟨λ d, begin
-  have h' := @dimality α _ _ (fin.cast_le (le_of_lt h) d),
-  rwa fin.cast_le_val _ (le_of_lt h) at h'
-end⟩
 
 /-- For any point, there exists another point that's not equal to it. -/
 theorem ex_not_eq {d : ℕ} [ordered_geo α $ d + 1] (p : α) : ∃ q, p ≠ q :=
@@ -101,10 +109,6 @@ section
 universe u
 parameters {α : Type u} [ordered_geo_inf α]
 namespace ordered_geo_inf
-/-- An ∞-dimensional ordered geometry is also an `n`-dimensional ordered geometry for
-    any `n`. -/
-instance ordered_geo_subspace {d : ℕ} : ordered_geo α d :=
-⟨λ _, inf_dimality⟩
 
 end ordered_geo_inf
 end
