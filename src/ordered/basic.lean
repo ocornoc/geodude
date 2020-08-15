@@ -23,10 +23,10 @@ theorem dimensionality.dim_def (d : ℕ) (vs : vector α d.succ) :
   dimensionality d vs = ∃ p, lin_indep p $ convex_hull {z | z ∈ vs.val} :=
 rfl
 
-/-- `▵PQR` is a non-degenerate triangle if `P`, `Q`, and `R` are all collinear
-    to each other. -/
+/-- `▵PQR` is a non-degenerate triangle if `P`, `Q`, and `R` are all
+    non-collinear to each other. -/
 def tri_nondegen (p q r : α) : Prop :=
-collinear p q r ∧ collinear r p q ∧ collinear q r p
+¬ collinear p q r ∧ ¬ collinear r p q ∧ ¬ collinear q r p
 
 end
 
