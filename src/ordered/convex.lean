@@ -18,16 +18,6 @@ inductive convex_hull (s : set α) : set α
 /-- A set is convex if it is equal to its own convex hull. -/
 def is_convex (s : set α) : Prop := convex_hull s = s
 
-/-- A set `S` is bound if, for any two points `P` and `Q` in the convex hull of
-    `S`, there is a point on the ray `P→Q` and a point on the ray `Q→P` that
-    are both not in the convex hull of `S`.
-    
-    This essentially means that you can draw a boundary that encircles `S`. -/
-def bound (s : set α) : Prop :=
-∀ v₁ v₂ ∈ convex_hull s,
-  (∃ p ∈ ray v₁ v₂, p ∉ convex_hull s)
-  ∧ (∃ q ∈ ray v₂ v₁, q ∉ convex_hull s)
-
 end
 
 section
@@ -77,14 +67,6 @@ end
 /-- Every set is a subset of its convex hull. -/
 theorem self_subs_hull (s : set α) : s ⊆ convex_hull s :=
 λ _, of_set
-
-/-- If a convex hull of a set `S` is bound, then `S` is also bound. -/
-theorem bound_of_hull_bound {s : set α} : bound (convex_hull s) → bound s :=
-begin
-  intros h _ _ hv₁ hv₂,
-  specialize h _ _ (self_subs_hull _ hv₁) (self_subs_hull _ hv₂),
-  rwa idempotent at h
-end
 
 /-- Every convex hull is convex. -/
 theorem convex (s : set α) : is_convex (convex_hull s) :=
