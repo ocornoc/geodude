@@ -118,6 +118,9 @@ begin
   rwa [line.single_self, set.mem_singleton_iff, eq_comm] at h
 end
 
+instance : nontrivial α :=
+⟨⟨arbitrary α, ex_not_eq _⟩⟩
+
 /-- For any line, there exists a point that's not in it. -/
 theorem ex_not_on_line (p q : α) : ∃ r, r ∉ line p q :=
 begin
