@@ -70,6 +70,9 @@ begin
   rwa [line.single_self, set.mem_singleton_iff, eq_comm] at h
 end
 
+instance {d : ℕ} [ordered_geo α $ d + 1] [inhabited α] : nontrivial α :=
+⟨⟨arbitrary α, @ex_not_eq d _ _⟩⟩
+
 /-- For any line, there exists a point that's not in it. -/
 theorem ex_not_on_line {d : ℕ} [ordered_geo α $ d + 2] (p q : α) :
   ∃ r, r ∉ line p q :=
