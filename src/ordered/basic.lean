@@ -39,8 +39,7 @@ s₁ ∪ s₂ = s ∧ (∀ p ∈ s₁, ¬ ∃ q r ∈ s₂, between q p r) ∧
 end
 
 /-- Ordered geometry, without an axiom of dimension. -/
-class {u} ordered_geo_nodim (α : Type u) extends has_betweenness α :=
-(is_a_point : α)
+class {u} ordered_geo_nodim (α : Type u) extends has_betweenness α, inhabited α :=
 (pasch₁ {v₁ v₂ : α} (v₃ v₄ ∈ line v₁ v₂) : v₃ ≠ v₄ → v₁ ∈ line v₃ v₄)
 (pasch₂ {v₁ v₂ v₃ v₄ v₅ : α} : ¬ nondegen_simplex [v₁, v₂, v₃] → between v₂ v₃ v₄ →
   between v₃ v₅ v₂ → ∃ z ∈ line v₄ v₅, between v₁ z v₂)
@@ -78,7 +77,7 @@ begin
   rwa [line.single_self, set.mem_singleton_iff, eq_comm] at h
 end
 
-instance {d : ℕ} [ordered_geo α $ d + 1] [inhabited α] : nontrivial α :=
+instance {d : ℕ} [ordered_geo α $ d + 1] : nontrivial α :=
 ⟨⟨arbitrary α, @ex_not_eq d _ _⟩⟩
 
 /-- For any line, there exists a point that's not in it. -/
