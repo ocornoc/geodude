@@ -40,6 +40,7 @@ end
 
 /-- Ordered geometry, without an axiom of dimension. -/
 class {u} ordered_geo_nodim (α : Type u) extends has_betweenness α :=
+(is_a_point : α)
 (pasch₁ {v₁ v₂ : α} (v₃ v₄ ∈ line v₁ v₂) : v₃ ≠ v₄ → v₁ ∈ line v₃ v₄)
 (pasch₂ {v₁ v₂ v₃ v₄ v₅ : α} : ¬ nondegen_simplex [v₁, v₂, v₃] → between v₂ v₃ v₄ →
   between v₃ v₅ v₂ → ∃ z ∈ line v₄ v₅, between v₁ z v₂)
@@ -109,6 +110,35 @@ section
 universe u
 parameters {α : Type u} [ordered_geo_inf α]
 namespace ordered_geo_inf
+
+/-- For any point, there exists another point that's not equal to it. -/
+theorem ex_not_eq (p : α) : ∃ q, p ≠ q :=
+begin
+  cases inf_dimality ⟨[p], rfl⟩ with w h,
+  use w,
+  simp only [list.mem_singleton] at h,
+  specialize h p p (convex_hull.of_set rfl) (convex_hull.of_set rfl),
+  change _ ∉ _ at h,
+  rwa [line.single_self, set.mem_singleton_iff, eq_comm] at h
+end
+
+/-- For any line, there exists a point that's not in it. -/
+theorem ex_not_on_line (p q : α) : ∃ r, r ∉ line p q :=
+begin
+  cases inf_dimality ⟨[p, q], rfl⟩ with w h,
+  use w,
+  specialize h p q (convex_hull.of_set $ or.inl rfl),
+  exact h (convex_hull.of_set $ or.inr $ list.mem_singleton_self _)
+end
+
+/-- For any plane, there exists a point that's not in it. -/
+theorem ex_not_on_plane (p q r : α) :
+  ∃ x, x ∉ convex_hull {y | y ∈ [p, q, r]} :=
+begin
+  cases inf_dimality ⟨[p, q, r], rfl⟩ with w h,
+  use w,
+  exact h.not_mem_of_indep
+end
 
 end ordered_geo_inf
 end
