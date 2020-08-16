@@ -20,7 +20,7 @@ class {u} has_betweenness (α : Type u) : Type u :=
 /-- `between P Q R` means "`Q` lies in the line segment `PR` and isnt an
     endpoint." -/
 def {u} between {α : Type u} [has_betweenness α] :=
-@has_betweenness.between α
+@has_betweenness.between α _
 
 namespace between
 section
