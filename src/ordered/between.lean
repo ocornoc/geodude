@@ -270,6 +270,16 @@ or.inr $ ray.end_mem_ray_right _ _
 theorem end_mem_line_right (x y : α) : y ∈ line x y :=
 or.inl $ or.inr $ ray.end_mem_ray_right _ _
 
+theorem ray_ssubs_of_ne {x y : α} (h : x ≠ y) : ray x y ⊂ line x y :=
+begin
+  apply set.ssubset_iff_subset_ne.mpr ⟨ray_subs _ _, λ h₁, _⟩,
+  rw [ray.end_not_mem_ray_left_iff_ne, h₁] at h,
+  exact h (end_mem_line_left _ _)
+end
+
+theorem ray_ssubs_of_ne' {x y : α} (h : x ≠ y) : ray y x ⊂ line x y :=
+by rw swap; exact ray_ssubs_of_ne h.symm
+
 theorem seg_ssubs (x y : α) : segment x y ⊂ line x y :=
 begin
   rw set.ssubset_iff_subset_ne,
@@ -278,6 +288,14 @@ begin
   rw ←h at hx,
   exact (segment.end_not_mem_seg_left _ _) hx
 end
+
+theorem rotate_of_ne {x y z : α} : x ≠ z → x ∈ line y z → y ∈ line x z :=
+by finish using between.symm_iff
+
+@[simp]
+theorem rotate_iff_of_ne {x y z : α} :
+  x ≠ z → y ≠ z → (x ∈ line y z ↔ y ∈ line x z) :=
+λ h₁ h₂, ⟨rotate_of_ne h₁, rotate_of_ne h₂⟩
 
 end line
 
@@ -295,6 +313,30 @@ line.end_mem_line_right _ _
 
 theorem of_same (p : α) : collinear p p p :=
 of_left p p
+
+theorem swap_iff (p q r : α) : collinear p q r ↔ collinear q p r :=
+by simp only [collin_def, line.swap]
+
+theorem swap {p q r : α} : collinear p q r → collinear q p r :=
+(swap_iff p q r).mp
+
+@[simp]
+theorem eq_ends_iff_eq (p q : α) : collinear p p q ↔ p = q :=
+have h : p = q ↔ q = p := ⟨eq.symm, eq.symm⟩, by simp [h]
+
+theorem rotate {p q r : α} (h : collinear p q r) (hrq : q ≠ r) :
+  collinear q r p :=
+begin
+  repeat { induction h },
+    all_goals { try { contradiction } },
+    { exact or.inl (or.inr $ or.inl $ or.inl h) },
+    { apply of_right },
+    { apply or.inr (or.inl $ or.inl h.symm ) },
+    { exact or.inl (or.inr $ or.inl $ or.inl h) },
+    { exact or.inl (or.inl $ or.inl $ h.symm) },
+    { exact or.inl (or.inr $ or.inl $ or.inl h.symm) },
+    { apply of_right }
+end
 
 end collinear
 

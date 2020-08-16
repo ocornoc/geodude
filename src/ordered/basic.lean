@@ -23,11 +23,11 @@ theorem dimensionality.dim_def (d : ℕ) (vs : vector α d.succ) :
   dimensionality d vs = ∃ p, lin_indep p $ convex_hull {z | z ∈ vs.val} :=
 rfl
 
-/-- A simplex is nondegenerate if, for every two endpoints and point `p`, if
-    both endpoints are distinct from `p`, then they're distinct from each other
-    and all three points are not collinear. -/
+/-- A simplex is nondegenerate iff, for every two endpoints and point `p`, if
+    both endpoints are distinct from `p`, then all three points are not
+    collinear to each other. -/
 def nondegen_simplex (l : list α) : Prop :=
-∀ v₁ v₂ v₃ ∈ l, v₁ ≠ v₂ → v₂ ≠ v₃ → v₁ ≠ v₃ ∧ ¬ collinear v₁ v₂ v₃
+∀ v₁ v₂ v₃ ∈ l, v₂ ≠ v₁ → v₂ ≠ v₃ → ¬ collinear v₁ v₃ v₂
 
 /-- For any set `S`, `S₁` and `S₂` form a dependent bipartition of `S` iff
     their union `S₁ ∪ S₂ = S` and there is no point in one that is between two
@@ -137,6 +137,41 @@ begin
   cases inf_dimality ⟨[p, q, r], rfl⟩ with w h,
   use w,
   exact h.not_mem_of_indep
+end
+
+theorem ex_nondegen_simplex (d : ℕ) :
+  ∃ vs : vector α (d + 1), nondegen_simplex vs.val :=
+begin
+  induction d with d hd,
+    { refine ⟨⟨[arbitrary α], rfl⟩, _⟩,
+      intros _ _ _ hv₁ hv₂ _ h,
+      rw list.mem_singleton at hv₁ hv₂,
+      rw [hv₁, hv₂] at h,
+      contradiction },
+  rcases hd with ⟨⟨l, h⟩, hvs⟩,
+  rcases inf_dimality ⟨l, h⟩ with ⟨p, hp⟩,
+  refine ⟨vector.cons p ⟨l, h⟩, _⟩,
+  rw lin_indep at hp,
+  intros v₁ v₂ v₃ hv₁ hv₂ hv₃ h₂₁ h₂₃ h,
+  simp only [vector.cons_val, subtype.val] at *,
+  rw list.mem_cons_iff at hv₁ hv₂ hv₃,
+  repeat { induction hv₁ }, repeat { induction hv₂ }, repeat { induction hv₃ },
+  repeat { contradiction },
+    { rw collinear.eq_ends_iff_eq at h, exact h₂₃ h.symm },
+    { apply hp _ _ (convex_hull.of_set hv₂) (convex_hull.of_set hv₃),
+      exact ((h.swap).rotate h₂₁.symm).rotate h₂₃ },
+    { exact (hp _ _ (convex_hull.of_set hv₁) (convex_hull.of_set hv₃)) h },
+    { apply hp _ _ (convex_hull.of_set hv₁) (convex_hull.of_set hv₂),
+      exact (h.swap).rotate h₂₁.symm },
+    {  }
+end
+
+theorem not_all_in_space {d : ℕ} : ¬ ∀ {vs : vector α (d + 2)},
+  nondegen_simplex vs.val → ∀ v₁, ∃ v₂ v₃ ∈ convex_hull {p | p ∈ vs.val},
+    collinear v₁ v₂ v₃ :=
+begin
+  intro h,
+
 end
 
 end ordered_geo_inf
