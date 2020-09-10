@@ -141,6 +141,18 @@ begin
   exact h₁.mpr (or.inr rfl)
 end
 
+theorem seg_subs_line (x y : α) : segment x y ⊆ line x y :=
+λ _, or.inl ∘ or.inl ∘ or.inl
+
+theorem seg_ssubs_line (x y : α) : segment x y ⊂ line x y :=
+begin
+  rw set.ssubset_iff_subset_ne,
+  refine ⟨seg_subs_line _ _, λ h₁, _⟩,
+  replace h₁ := eq_iff_iff.mp (congr_fun h₁ y),
+  apply end_not_mem_seg_right x y,
+  exact h₁.mpr (or.inl $ or.inr $ or.inr rfl)
+end
+
 end segment
 
 namespace interval
@@ -262,7 +274,10 @@ theorem ray_subs' (x y : α) : ray y x ⊆ line x y :=
 λ _, or.inr
 
 theorem seg_subs (x y : α) : segment x y ⊆ line x y :=
-trans (ray.seg_subs _ _) (ray_subs _ _)
+segment.seg_subs_line x y
+
+theorem seg_ssubs (x y : α) : segment x y ⊂ line x y :=
+segment.seg_ssubs_line x y
 
 theorem end_mem_line_left (x y : α) : x ∈ line x y :=
 or.inr $ ray.end_mem_ray_right _ _
@@ -279,15 +294,6 @@ end
 
 theorem ray_ssubs_of_ne' {x y : α} (h : x ≠ y) : ray y x ⊂ line x y :=
 by rw swap; exact ray_ssubs_of_ne h.symm
-
-theorem seg_ssubs (x y : α) : segment x y ⊂ line x y :=
-begin
-  rw set.ssubset_iff_subset_ne,
-  refine ⟨seg_subs _ _, λ h, _⟩,
-  have hx := end_mem_line_left x y,
-  rw ←h at hx,
-  exact (segment.end_not_mem_seg_left _ _) hx
-end
 
 theorem rotate_of_ne {x y z : α} : x ≠ z → x ∈ line y z → y ∈ line x z :=
 by finish using between.symm_iff
