@@ -32,10 +32,10 @@ parameters {α : Type u} [has_betweenness α]
 lemma extend {p q : α} : p ≠ q → ∃ r, between p q r :=
 has_betweenness.between_extend
 
-lemma ne_of_no_extension {p q : α} : (¬ ∃ r, between p q r) → p = q :=
+lemma eq_of_no_extension {p q : α} : (¬ ∃ r, between p q r) → p = q :=
 by contrapose!; exact extend
 
-lemma ne_of_no_extension' {p q : α} : (∀ r, ¬ between p q r) → p = q :=
+lemma eq_of_no_extension' {p q : α} : (∀ r, ¬ between p q r) → p = q :=
 by contrapose!; exact extend
 
 /-- If `Q` is between `P` and `R`, then `P ≠ R`. -/
