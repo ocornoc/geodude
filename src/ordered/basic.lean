@@ -27,7 +27,7 @@ rfl
     both endpoints are distinct from `p`, then all three points are not
     collinear to each other. -/
 def nondegen_simplex (l : list α) : Prop :=
-∀ v₁ v₂ v₃ ∈ l, v₂ ≠ v₁ → v₂ ≠ v₃ → ¬ collinear v₁ v₃ v₂
+∀ v₁ v₂ v₃ ∈ l, v₂ = v₁ ∨ v₂ = v₃ ∨ ¬ collinear v₁ v₃ v₂
 
 /-- For any set `S`, `S₁` and `S₂` form a dependent bipartition of `S` iff
     their union `S₁ ∪ S₂ = S` and there is no point in one that is between two
@@ -53,6 +53,10 @@ class {u} ordered_geo_nodim (α : Type u) extends has_betweenness α, inhabited 
     `d+1` long. -/
 class {u} ordered_geo (α : Type u) (d : ℕ) extends ordered_geo_nodim α :=
 (dimality {d' : ℕ} (h : d' < d) (vs : vector α d'.succ) : dimensionality d' vs)
+
+/-- Ordered geometry with a finite dimension. This finiteness is shown by the
+    property that there is a simplex  -/
+class {u} ordered_geo_fin (α : Type u) (d : ℕ) extends ordered_geo α d :=
 (all_in_space : ∀ {vs : vector α (d + 2)}, nondegen_simplex vs.val →
   ∀ v₁, ∃ v₂ v₃ ∈ convex_hull {p | p ∈ vs.val}, collinear v₁ v₂ v₃)
 
@@ -107,63 +111,65 @@ universe u
 parameters {α : Type u} [ordered_geo_inf α]
 namespace ordered_geo_inf
 
+def to_ordered_geo (d : ℕ) : ordered_geo α d := {
+  dimality := λ d' _, inf_dimality
+}
+
+instance ordered_geo (d : ℕ) : ordered_geo α d := to_ordered_geo d
+
 /-- For any point, there exists another point that's not equal to it. -/
 theorem ex_not_eq (p : α) : ∃ q, p ≠ q :=
-begin
-  cases inf_dimality ⟨[p], rfl⟩ with w h,
-  use w,
-  simp only [list.mem_singleton] at h,
-  specialize h p p (convex_hull.of_set rfl) (convex_hull.of_set rfl),
-  change _ ∉ _ at h,
-  rwa [line.single_self, set.mem_singleton_iff, eq_comm] at h
-end
+@ordered_geo.ex_not_eq _ 0 (ordered_geo _) p
 
 instance : nontrivial α :=
 ⟨⟨arbitrary α, ex_not_eq _⟩⟩
 
 /-- For any line, there exists a point that's not in it. -/
 theorem ex_not_on_line (p q : α) : ∃ r, r ∉ line p q :=
-begin
-  cases inf_dimality ⟨[p, q], rfl⟩ with w h,
-  use w,
-  specialize h p q (convex_hull.of_set $ or.inl rfl),
-  exact h (convex_hull.of_set $ or.inr $ list.mem_singleton_self _)
-end
+@ordered_geo.ex_not_on_line _ 0 (ordered_geo _) p q
 
 /-- For any plane, there exists a point that's not in it. -/
 theorem ex_not_on_plane (p q r : α) :
   ∃ x, x ∉ convex_hull {y | y ∈ [p, q, r]} :=
-begin
-  cases inf_dimality ⟨[p, q, r], rfl⟩ with w h,
-  use w,
-  exact h.not_mem_of_indep
-end
+@ordered_geo.ex_not_on_plane _ 0 (ordered_geo _) p q r
 
 theorem ex_nondegen_simplex (d : ℕ) :
   ∃ vs : vector α (d + 1), nondegen_simplex vs.val :=
 begin
   induction d with d hd,
     { refine ⟨⟨[arbitrary α], rfl⟩, _⟩,
-      intros _ _ _ hv₁ hv₂ _ h,
+      intros _ _ _ hv₁ hv₂ _,
       rw list.mem_singleton at hv₁ hv₂,
-      rw [hv₁, hv₂] at h,
-      contradiction },
+      rw ←hv₁ at hv₂,
+      exact or.inl hv₂ },
   rcases hd with ⟨⟨l, h⟩, hvs⟩,
   rcases inf_dimality ⟨l, h⟩ with ⟨p, hp⟩,
   refine ⟨vector.cons p ⟨l, h⟩, _⟩,
   rw lin_indep at hp,
-  intros v₁ v₂ v₃ hv₁ hv₂ hv₃ h₂₁ h₂₃ h,
-  simp only [vector.cons_val, subtype.val] at *,
-  rw list.mem_cons_iff at hv₁ hv₂ hv₃,
+  intros v₁ v₂ v₃ hv₁ hv₂ hv₃,
+  have : subtype.val (p :: (⟨l, h⟩ : vector _ _)) = p :: l := rfl,
+  rw [this, list.mem_cons_iff] at hv₁ hv₂ hv₃,
+  have : subtype.val (subtype.mk l h) = l := rfl,
+  rw this at hp hvs,
   repeat { induction hv₁ }, repeat { induction hv₂ }, repeat { induction hv₃ },
-  repeat { contradiction },
-    { rw collinear.eq_ends_iff_eq at h, exact h₂₃ h.symm },
-    { apply hp _ _ (convex_hull.of_set hv₂) (convex_hull.of_set hv₃),
-      exact ((h.swap).rotate h₂₁.symm).rotate h₂₃ },
-    { exact (hp _ _ (convex_hull.of_set hv₁) (convex_hull.of_set hv₃)) h },
-    { apply hp _ _ (convex_hull.of_set hv₁) (convex_hull.of_set hv₂),
-      exact (h.swap).rotate h₂₁.symm },
-    {  }
+    { exact or.inl rfl },
+    { exact or.inl rfl },
+    { rw collinear.eq_ends_iff_eq, tauto! },
+    { by_cases h₁ : v₂ = v₃, { exact or.inr (or.inl h₁) },
+      apply or.inr ∘ or.inr,
+      intro h,
+      apply (hp _ _ (convex_hull.of_set hv₃) (convex_hull.of_set hv₂)).elim,
+      exact h.rotate (ne.symm h₁) },
+    { exact or.inr (or.inl rfl) },
+    { apply (or.inr ∘ or.inr) (hp v₁ v₃ _ _),
+        { exact convex_hull.of_set hv₁ },
+        { exact convex_hull.of_set hv₃ } },
+    { by_cases h₁ : v₁ = v₂, { exact or.inl h₁.symm },
+      apply or.inr ∘ or.inr,
+      intro h,
+      apply (hp _ _ (convex_hull.of_set hv₂) (convex_hull.of_set hv₁)).elim,
+      exact h.rotate' h₁ },
+    { exact hvs _ _ _ hv₁ hv₂ hv₃ }
 end
 
 theorem not_all_in_space {d : ℕ} : ¬ ∀ {vs : vector α (d + 2)},
