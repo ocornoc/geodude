@@ -153,6 +153,27 @@ begin
   exact h₁.mpr (or.inl $ or.inr $ or.inr rfl)
 end
 
+theorem ne_ends_of_mem {x y : α} (h : ∃ z, z ∈ segment x y) : x ≠ y :=
+begin
+  intro he,
+  induction he,
+  cases h with _ h,
+  rw empty_of_same_ends at h,
+  exact h
+end
+
+theorem ne_left_of_mem {x y z : α} (h : x ∈ segment y z) : x ≠ y :=
+λ he, by rw he at h; exact (end_not_mem_seg_left _ _).elim h
+
+theorem ne_right_of_mem {x y z : α} (h : x ∈ segment y z) : x ≠ z :=
+λ he, by rw he at h; exact (end_not_mem_seg_right _ _).elim h
+
+theorem not_in_rotate {x y z : α} : z ∈ segment x y → x ∉ segment y z :=
+between.not_rotate
+
+theorem not_in_rotate' {x y z : α} : z ∈ segment x y → x ∉ segment z y :=
+by rw swap z y; exact not_in_rotate
+
 end segment
 
 namespace interval
@@ -194,6 +215,9 @@ by simp only [intrv_def', segment.swap, set_ins_comm]
 
 theorem eq_of_mem_same {p q : α} (h : p ∈ interval q q) : p = q :=
 by rw single_self at h; exact h
+
+theorem eq_iff_mem_same (p q : α) : p ∈ interval q q ↔ p = q :=
+⟨eq_of_mem_same, λ _, by simpa⟩
 
 end interval
 
@@ -330,7 +354,7 @@ theorem swap {p q r : α} : collinear p q r → collinear q p r :=
 theorem eq_ends_iff_eq (p q : α) : collinear p p q ↔ p = q :=
 have h : p = q ↔ q = p := ⟨eq.symm, eq.symm⟩, by simp [h]
 
-theorem rotate {p q r : α} (h : collinear p q r) (hrq : q ≠ r) :
+theorem rotate {p q r : α} (h : collinear p q r) (hqr : q ≠ r) :
   collinear q r p :=
 begin
   repeat { induction h },
@@ -343,6 +367,33 @@ begin
     { exact or.inl (or.inr $ or.inl $ or.inl h.symm) },
     { apply of_right }
 end
+
+theorem rotate' {p q r : α} (h : collinear p q r) (hpr : p ≠ r) :
+  collinear r p q :=
+begin
+  repeat { induction h },
+    all_goals { try { contradiction }, try { exact of_left r p } },
+    { apply rotate _ (segment.ne_left_of_mem h),
+      apply rotate _ (segment.ne_right_of_mem h).symm,
+      exact segment.seg_subs_line _ _ h },
+    { apply rotate _ hpr.symm,
+      apply rotate _ (segment.ne_left_of_mem h),
+      apply rotate _ (segment.ne_right_of_mem h).symm,
+      exact segment.seg_subs_line _ _ h },
+    { apply rotate _ hpr.symm,
+      apply rotate _ (segment.ne_right_of_mem h).symm,
+      exact segment.seg_subs_line _ _ h },
+    { apply rotate (swap _) hpr.symm,
+      exact segment.seg_subs_line _ _ h },
+    { apply rotate _ (segment.ne_right_of_mem h),
+      apply rotate _ (segment.ne_left_of_mem h).symm,
+      rw segment.swap at h,
+      exact segment.seg_subs_line _ _ h }
+end
+
+theorem rotate_iff {p q r : α} (hpq : p ≠ q) (hpr : p ≠ r) (hqr : q ≠ r) :
+  collinear p q r ↔ collinear q r p :=
+⟨λ hc, rotate hc hqr, λ hc, rotate' hc (ne.symm hpq)⟩
 
 end collinear
 
