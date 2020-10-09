@@ -54,10 +54,11 @@ class {u} ordered_geo_nodim (α : Type u) extends has_betweenness α, inhabited 
 class {u} ordered_geo (α : Type u) (d : ℕ) extends ordered_geo_nodim α :=
 (dimality {d' : ℕ} (h : d' < d) (vs : vector α d'.succ) : dimensionality d' vs)
 
-/-- Ordered geometry with a finite dimension. This finiteness is shown by the
-    property that there is a simplex  -/
+/-- Ordered geometry with a finite dimension `d`. This finiteness is shown by
+    the property that every non-degenerate convex hull of `d` vertices has two
+    points in it that are collinear to any point. -/
 class {u} ordered_geo_fin (α : Type u) (d : ℕ) extends ordered_geo α d :=
-(all_in_space : ∀ {vs : vector α (d + 2)}, nondegen_simplex vs.val →
+(all_in_space : ∀ {vs : vector α d.succ}, nondegen_simplex vs.val →
   ∀ v₁, ∃ v₂ v₃ ∈ convex_hull {p | p ∈ vs.val}, collinear v₁ v₂ v₃)
 
 /-- An infinite ordered geometry, with the property that the axiom of
