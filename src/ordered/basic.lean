@@ -27,7 +27,7 @@ rfl
     both endpoints are distinct from `p`, then all three points are not
     collinear to each other. -/
 def nondegen_simplex (l : list α) : Prop :=
-∀ v₁ v₂ v₃ ∈ l, v₂ = v₁ ∨ v₂ = v₃ ∨ ¬ collinear v₁ v₃ v₂
+l.nodup ∧ ∀ v₁ v₂ v₃ ∈ l, v₂ = v₁ ∨ v₂ = v₃ ∨ ¬ collinear v₁ v₃ v₂
 
 /-- For any set `S`, `S₁` and `S₂` form a dependent bipartition of `S` iff
     their union `S₁ ∪ S₂ = S` and there is no point in one that is between two
@@ -69,6 +69,34 @@ class {u} ordered_geo_inf (α : Type u) extends ordered_geo_nodim α :=
 section
 universe u
 parameter {α : Type u}
+namespace nondegen_simplex
+section
+parameter [has_betweenness α]
+
+theorem of_subset {l : list α} (hl : nondegen_simplex l) :
+  ∀ l₁ <+ l, nondegen_simplex l₁ :=
+begin
+  intros _ h,
+  refine ⟨list.nodup_of_sublist h hl.left, λ _ _ _ hp hq hr, _⟩,
+  have hp₁ := list.sublist.subset h hp,
+  have hq₁ := list.sublist.subset h hq,
+  have hr₁ := list.sublist.subset h hr,
+  exact hl.right _ _ _ hp₁ hq₁ hr₁
+end
+
+theorem not_of_not_subset {l₁ l : list α} (hl₁ : ¬ nondegen_simplex l₁)
+  (hl : l₁ <+ l) : ¬ nondegen_simplex l :=
+by revert hl₁; contrapose!; exact λ h, of_subset h _ hl
+
+theorem of_nil : nondegen_simplex (@list.nil α) :=
+⟨by simp, by tauto⟩
+
+theorem of_single (x : α) : nondegen_simplex [x] :=
+⟨by simp, by finish⟩
+
+end
+end nondegen_simplex
+
 namespace ordered_geo
 
 /-- For any point, there exists another point that's not equal to it. -/
@@ -78,8 +106,7 @@ begin
   use w,
   simp only [list.mem_singleton] at h,
   specialize h p p (convex_hull.of_set rfl) (convex_hull.of_set rfl),
-  change _ ∉ _ at h,
-  rwa [line.single_self, set.mem_singleton_iff, eq_comm] at h
+  exact h.elim (collinear.of_left' _ _)
 end
 
 instance {d : ℕ} [ordered_geo α $ d + 1] : nontrivial α :=
@@ -90,9 +117,10 @@ theorem ex_not_on_line {d : ℕ} [ordered_geo α $ d + 2] (p q : α) :
   ∃ r, r ∉ line p q :=
 begin
   cases dimality (dec_trivial : 1 < d + 2) ⟨[p, q], dec_trivial⟩ with w h,
-  use w,
+  refine ⟨w, λ hw, _⟩,
   specialize h p q (convex_hull.of_set $ or.inl rfl),
-  exact h (convex_hull.of_set $ or.inr $ list.mem_singleton_self _)
+  replace hw : collinear p q w := ⟨p, q, by simp, by simp, hw⟩,
+  exact (h $ convex_hull.of_set $ by simp).elim hw
 end
 
 /-- For any plane, there exists a point that's not in it. -/
@@ -138,39 +166,25 @@ theorem ex_nondegen_simplex (d : ℕ) :
   ∃ vs : vector α (d + 1), nondegen_simplex vs.val :=
 begin
   induction d with d hd,
-    { refine ⟨⟨[arbitrary α], rfl⟩, _⟩,
-      intros _ _ _ hv₁ hv₂ _,
-      rw list.mem_singleton at hv₁ hv₂,
-      rw ←hv₁ at hv₂,
-      exact or.inl hv₂ },
+    { exact ⟨⟨[arbitrary α], rfl⟩, by simp, by finish⟩ },
   rcases hd with ⟨⟨l, h⟩, hvs⟩,
   rcases inf_dimality ⟨l, h⟩ with ⟨p, hp⟩,
-  refine ⟨vector.cons p ⟨l, h⟩, _⟩,
+  suffices : (p :: ⟨l, h⟩ : vector α _).val.nodup,
+  refine ⟨vector.cons p ⟨l, h⟩, this, λ v₁ v₂ v₃ hv₁ hv₂ hv₃, _⟩,
   rw lin_indep at hp,
-  intros v₁ v₂ v₃ hv₁ hv₂ hv₃,
   have : subtype.val (p :: (⟨l, h⟩ : vector _ _)) = p :: l := rfl,
   rw [this, list.mem_cons_iff] at hv₁ hv₂ hv₃,
-  have : subtype.val (subtype.mk l h) = l := rfl,
-  rw this at hp hvs,
-  repeat { induction hv₁ }, repeat { induction hv₂ }, repeat { induction hv₃ },
-    { exact or.inl rfl },
-    { exact or.inl rfl },
-    { rw collinear.eq_ends_iff_eq, tauto! },
-    { by_cases h₁ : v₂ = v₃, { exact or.inr (or.inl h₁) },
-      apply or.inr ∘ or.inr,
-      intro h,
-      apply (hp _ _ (convex_hull.of_set hv₃) (convex_hull.of_set hv₂)).elim,
-      exact h.rotate (ne.symm h₁) },
-    { exact or.inr (or.inl rfl) },
-    { apply (or.inr ∘ or.inr) (hp v₁ v₃ _ _),
-        { exact convex_hull.of_set hv₁ },
-        { exact convex_hull.of_set hv₃ } },
-    { by_cases h₁ : v₁ = v₂, { exact or.inl h₁.symm },
-      apply or.inr ∘ or.inr,
-      intro h,
-      apply (hp _ _ (convex_hull.of_set hv₂) (convex_hull.of_set hv₁)).elim,
-      exact h.rotate' h₁ },
-    { exact hvs _ _ _ hv₁ hv₂ hv₃ }
+  rw (rfl : subtype.val (subtype.mk l h) = l) at hp hvs,
+  rw collinear.none_collinear_iff_empty_fixed_1'' at hp,
+  rw [convex_hull.is_empty_iff, set.eq_empty_iff_forall_not_mem] at hp,
+  have : 0 < l.length := by rw h; exact nat.succ_pos',
+  cases list.length_pos_iff_exists_mem.mp this with w hw,
+  exact (hp _).elim hw,
+  change list.nodup (p :: l),
+  apply list.nodup_cons_of_nodup _ hvs.left,
+  intro hp₁,
+  change p ∈ {z : α | z ∈ subtype.val (⟨l, h⟩ : vector α _)} at hp₁,
+  exact lin_indep.not_indep_of_mem (convex_hull.of_set hp₁) hp
 end
 
 theorem not_all_in_space {d : ℕ} : ¬ ∀ {vs : vector α (d + 2)},
