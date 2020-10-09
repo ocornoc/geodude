@@ -178,8 +178,9 @@ begin
 end
 
 theorem ex_nondegen_simplex (d : ℕ) :
-  ∃ vs : vector α (d + 1), nondegen_simplex vs.val :=
+  ∃ vs : vector α d, nondegen_simplex vs.val :=
 begin
+  induction d with d hd, { exact ⟨vector.nil, nondegen_simplex.of_nil⟩ },
   induction d with d hd,
     { exact ⟨⟨[arbitrary α], rfl⟩, by simp, by finish⟩ },
   rcases hd with ⟨⟨l, h⟩, hvs⟩,
