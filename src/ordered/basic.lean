@@ -203,7 +203,7 @@ begin
   exact lin_indep.not_indep_of_mem (convex_hull.of_set hp₁) hp
 end
 
-theorem not_all_in_space' (d : ℕ) : ¬ ∀ {vs : vector α (d + 1)},
+theorem not_all_in_space' (d : ℕ) : ¬ ∀ {vs : vector α d.succ},
   nondegen_simplex vs.val → ∀ v₁, ∃ v₂ v₃ ∈ convex_hull {p | p ∈ vs.val},
     collinear v₁ v₂ v₃ :=
 begin
