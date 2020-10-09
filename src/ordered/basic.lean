@@ -215,5 +215,18 @@ begin
   rwa ←collinear.rotate_iff
 end
 
+/-- For any `d`, there's a nondegenerate simplex with `d` vertices and a point
+    `p` that's linearly independent to the convex hull of the simplex. -/
+theorem ex_ndsimp_ex_p_lindep (d : ℕ) : ∃ vs : vector α d.succ,
+  nondegen_simplex vs.val ∧ ∃ p, lin_indep p (convex_hull {p | p ∈ vs.val}) :=
+begin
+  have := not_all_in_space d,
+  push_neg at this,
+  rcases this with ⟨v, hv1, x, hx⟩,
+  refine ⟨v, hv1, x, _⟩,
+  rw collinear.none_collinear_iff_empty_fixed_1 at hx,
+  rwa [lin_indep.indep_def, collinear.none_collinear_iff_empty_fixed_1'']
+end
+
 end ordered_geo_inf
 end
