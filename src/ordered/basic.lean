@@ -196,9 +196,7 @@ begin
   have : 0 < l.length := by rw h; exact nat.succ_pos',
   cases list.length_pos_iff_exists_mem.mp this with w hw,
   exact (hp _).elim hw,
-  change list.nodup (p :: l),
-  apply list.nodup_cons_of_nodup _ hvs.left,
-  intro hp₁,
+  apply list.nodup_cons_of_nodup (λ hp₁, _) hvs.left,
   change p ∈ {z : α | z ∈ subtype.val (⟨l, h⟩ : vector α _)} at hp₁,
   exact lin_indep.not_indep_of_mem (convex_hull.of_set hp₁) hp
 end
