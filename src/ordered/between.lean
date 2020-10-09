@@ -499,5 +499,9 @@ theorem not_indep_of_mem {p : α} {s : set α} (hp : p ∈ s) : ¬ lin_indep p s
 theorem not_mem_of_indep {p : α} {s : set α} (hp : lin_indep p s) : p ∉ s :=
 λ h, not_indep_of_mem h hp
 
+theorem ne_of_indep {p : α} {s : set α} (hp : lin_indep p s) :
+  ∀ q ∈ s, p ≠ q :=
+λ _ hq h, by induction h; exact not_mem_of_indep hp hq
+
 end lin_indep
 end
