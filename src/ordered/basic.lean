@@ -201,7 +201,9 @@ begin
   exact lin_indep.not_indep_of_mem (convex_hull.of_set hp₁) hp
 end
 
-theorem not_all_in_space' (d : ℕ) : ¬ ∀ {vs : vector α d.succ},
+/-- It's false that for any nondegenerate simplex with `d` vertices and point
+    `p`, there are two points in the convex hull of the simplex -/
+theorem not_all_in_space (d : ℕ) : ¬ ∀ {vs : vector α d.succ},
   nondegen_simplex vs.val → ∀ v₁, ∃ v₂ v₃ ∈ convex_hull {p | p ∈ vs.val},
     collinear v₁ v₂ v₃ :=
 begin
