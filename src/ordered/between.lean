@@ -303,6 +303,9 @@ segment.seg_subs_line x y
 theorem seg_ssubs (x y : α) : segment x y ⊂ line x y :=
 segment.seg_ssubs_line x y
 
+theorem intrv_subs (x y : α) : interval x y ⊆ line x y :=
+λ _, or.inl ∘ or.inl
+
 theorem end_mem_line_left (x y : α) : x ∈ line x y :=
 or.inr $ ray.end_mem_ray_right _ _
 
