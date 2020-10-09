@@ -41,7 +41,7 @@ end
 /-- Ordered geometry, without an axiom of dimension. -/
 class {u} ordered_geo_nodim (α : Type u) extends has_betweenness α, inhabited α :=
 (pasch₁ {v₁ v₂ : α} (v₃ v₄ ∈ line v₁ v₂) : v₃ ≠ v₄ → v₁ ∈ line v₃ v₄)
-(pasch₂ {v₁ v₂ v₃ v₄ v₅ : α} : ¬ nondegen_simplex [v₁, v₂, v₃] → between v₂ v₃ v₄ →
+(pasch₂ {v₁ v₂ v₃ v₄ v₅ : α} : nondegen_simplex [v₁, v₂, v₃] → between v₂ v₃ v₄ →
   between v₃ v₅ v₂ → ∃ z ∈ line v₄ v₅, between v₁ z v₂)
 (dedekind {p q : α} {s₁ s₂ : set α} : nonempty s₁ → nonempty s₂ →
   dep_biparition (line p q) s₁ s₂ →
