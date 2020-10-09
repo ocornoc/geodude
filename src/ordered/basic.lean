@@ -177,6 +177,7 @@ begin
   exact hw _ _ hp hq hpq.rotate
 end
 
+/-- For any length `d`, there is a nondegenerate simplex with `d` vertices. -/
 theorem ex_nondegen_simplex (d : ℕ) :
   ∃ vs : vector α d, nondegen_simplex vs.val :=
 begin
