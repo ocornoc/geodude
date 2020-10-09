@@ -95,6 +95,23 @@ theorem iff_ssubs_of_convex {s t : set α} (hs : is_convex s) (ht : is_convex t)
 by rw is_convex.convex_def at hs ht; rwa [hs, ht]
 
 @[simp]
+theorem of_empty : @convex_hull α _ ∅ = ∅ :=
+begin
+  apply set.eq_of_subset_of_subset _ (self_subs_hull _),
+  intros _ h,
+  induction h with _ _ _ _ _ _ _ _ h, { assumption },
+  exact (set.not_mem_empty _) h
+end
+
+@[simp]
+theorem is_empty_iff (s : set α) : (@convex_hull α _ s = ∅) ↔ s = ∅ :=
+begin
+  refine ⟨λ h, _, λ h, by rw h; exact of_empty⟩,
+  rw [←set.subset_empty_iff, ←h],
+  apply self_subs_hull
+end
+
+@[simp]
 theorem of_singleton (p : α) : @convex_hull α _ {p} = {p} :=
 begin
   funext,
