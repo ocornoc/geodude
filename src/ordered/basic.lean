@@ -162,6 +162,21 @@ theorem ex_not_on_plane (p q r : α) :
   ∃ x, x ∉ convex_hull {y | y ∈ [p, q, r]} :=
 @ordered_geo.ex_not_on_plane _ 0 (ordered_geo _) p q r
 
+/-- For any potentially-degenerate simplex defined by the vertices `l`, there
+    is a point that's not in the convex hull of `l`. -/
+lemma ex_point_not_mem_simplex_hull (l : list α) :
+  ∃ p, p ∉ convex_hull {q | q ∈ l} :=
+begin
+  cases l with hd tl, { simp },
+  classical,
+  by_contra h,
+  push_neg at h,
+  have := @ordered_geo_inf.inf_dimality _ _ tl.length ⟨hd :: tl, by trivial⟩,
+  cases this with w hw,
+  rcases collinear.ex_collinear_of_mem (h w) with ⟨_, _, hp, hq, hpq⟩,
+  exact hw _ _ hp hq hpq.rotate
+end
+
 theorem ex_nondegen_simplex (d : ℕ) :
   ∃ vs : vector α (d + 1), nondegen_simplex vs.val :=
 begin
