@@ -87,8 +87,9 @@ def ray (x y : α) : set α := {z | between z y x} ∪ segment x y ∪ {y}
 /-- A line through `x` and `y` -/
 def line (x y : α) : set α := interval x y ∪ ray x y ∪ ray y x
 
-/-- `collinear P Q R` means "`R` is on the line `PQ`" -/
-def collinear (p q r : α) : Prop := r ∈ line p q
+/-- `collinear P Q R` means "There is a line with `p`, `r`, and `q` on it." -/
+def collinear (p q r : α) : Prop :=
+∃ v₀ v₁, p ∈ line v₀ v₁ ∧ q ∈ line v₀ v₁ ∧ r ∈ line v₀ v₁
 
 /-- `p` is linearly independent from any two points in `s`. -/
 def lin_indep (p : α) (s : set α) : Prop :=
@@ -335,68 +336,153 @@ end line
 namespace collinear
 
 @[simp]
-theorem collin_def (p q r : α) : collinear p q r = (r ∈ line p q) :=
+theorem collin_def (p q r : α) : collinear p q r =
+  ∃ v₀ v₁ : α, p ∈ line v₀ v₁ ∧ q ∈ line v₀ v₁ ∧ r ∈ line v₀ v₁ :=
 rfl
 
-theorem of_left (p q : α) : collinear p q p :=
-line.end_mem_line_left _ _
+theorem of_left (p q : α) : collinear p p q :=
+⟨p, q, by simp⟩
 
 theorem of_right (p q : α) : collinear p q q :=
-line.end_mem_line_right _ _
+⟨p, q, by simp⟩
+
+theorem of_ends (p q : α) : collinear p q p :=
+⟨p, q, by simp⟩
 
 theorem of_same (p : α) : collinear p p p :=
 of_left p p
 
 theorem swap_iff (p q r : α) : collinear p q r ↔ collinear q p r :=
-by simp only [collin_def, line.swap]
+begin
+  refine ⟨λ h, _, λ h, _⟩,
+  all_goals
+    { rcases h with ⟨_, _, h⟩,
+      rw [←and.assoc, @and.comm (_ ∈ _), and.assoc] at h,
+      exact ⟨_, _, h⟩ }
+end
 
 theorem swap {p q r : α} : collinear p q r → collinear q p r :=
 (swap_iff p q r).mp
 
-@[simp]
-theorem eq_ends_iff_eq (p q : α) : collinear p p q ↔ p = q :=
-have h : p = q ↔ q = p := ⟨eq.symm, eq.symm⟩, by simp [h]
+theorem mem_of_mem_ray {p q r : α} (h : p ∈ ray q r) : collinear q r p :=
+⟨q, r, by simp, by simp, line.ray_subs _ _ h⟩
 
-theorem rotate {p q r : α} (h : collinear p q r) (hqr : q ≠ r) :
+theorem mem_of_mem_ray' {p q r : α} (h : p ∈ ray r q) : collinear q r p :=
+⟨r, q, by simp, by simp, line.ray_subs _ _ h⟩
+
+theorem mem_of_mem_intrv {p q r : α} (h : p ∈ interval q r) :
   collinear q r p :=
+⟨q, r, by simp, by simp, line.intrv_subs _ _ h⟩
+
+theorem rotate' {p q r : α} (h : collinear p q r) : collinear r p q :=
 begin
-  repeat { induction h },
-    all_goals { try { contradiction } },
-    { exact or.inl (or.inr $ or.inl $ or.inl h) },
-    { apply of_right },
-    { apply or.inr (or.inl $ or.inl h.symm ) },
-    { exact or.inl (or.inr $ or.inl $ or.inl h) },
-    { exact or.inl (or.inl $ or.inl $ h.symm) },
-    { exact or.inl (or.inr $ or.inl $ or.inl h.symm) },
-    { apply of_right }
+  rcases h with ⟨_, _, h⟩,
+  rw [@and.comm (_ ∈ _), and.assoc, @and.comm (_ ∈ _), and.assoc] at h,
+  exact ⟨_, _, h⟩
 end
 
-theorem rotate' {p q r : α} (h : collinear p q r) (hpr : p ≠ r) :
-  collinear r p q :=
+theorem rotate {p q r : α} : collinear p q r → collinear q r p :=
+rotate' ∘ rotate'
+
+theorem rotate_iff {p q r : α} : collinear p q r ↔ collinear q r p :=
+⟨rotate, rotate'⟩
+
+theorem of_left' (p q : α) : collinear p p q :=
+(of_ends _ _).rotate'
+
+theorem ex_collinear_of_mem {p : α} {s : set α} (h : p ∈ s) :
+  ∃ q r ∈ s, collinear p q r :=
+⟨_, _, h, h, of_same _⟩
+
+@[simp]
+theorem none_collinear_iff_empty (s : set α) :
+  (∀ p q r ∈ s, ¬ collinear p q r) ↔ s = ∅ :=
 begin
-  repeat { induction h },
-    all_goals { try { contradiction }, try { exact of_left r p } },
-    { apply rotate _ (segment.ne_left_of_mem h),
-      apply rotate _ (segment.ne_right_of_mem h).symm,
-      exact segment.seg_subs_line _ _ h },
-    { apply rotate _ hpr.symm,
-      apply rotate _ (segment.ne_left_of_mem h),
-      apply rotate _ (segment.ne_right_of_mem h).symm,
-      exact segment.seg_subs_line _ _ h },
-    { apply rotate _ hpr.symm,
-      apply rotate _ (segment.ne_right_of_mem h).symm,
-      exact segment.seg_subs_line _ _ h },
-    { apply rotate (swap _) hpr.symm,
-      exact segment.seg_subs_line _ _ h },
-    { apply rotate _ (segment.ne_right_of_mem h),
-      apply rotate _ (segment.ne_left_of_mem h).symm,
-      rw segment.swap at h,
-      exact segment.seg_subs_line _ _ h }
+  refine ⟨λ h, set.eq_empty_iff_forall_not_mem.mpr $ λ _, _, λ h _ _ _ hp, _⟩,
+    { intro hx, exact h _ _ _ hx hx hx (of_same _) },
+    { rw h at hp, exact (set.not_mem_empty _).elim hp }
 end
 
-theorem rotate_iff {p q r : α} (hpq : p ≠ q) (hpr : p ≠ r) (hqr : q ≠ r) :
-  collinear p q r ↔ collinear q r p :=
-⟨λ hc, rotate hc hqr, λ hc, rotate' hc (ne.symm hpq)⟩
+@[simp]
+theorem none_collinear_iff_empty_2 (s : set α) :
+  (∀ p q ∈ s, ¬ collinear p p q) ↔ s = ∅ :=
+begin
+  refine ⟨λ h, set.eq_empty_iff_forall_not_mem.mpr $ λ _, _, λ h _ _ _ hp, _⟩,
+    { intro hx, exact h _ _ hx hx (of_same _) },
+    { rw h at hp, exact (set.not_mem_empty _).elim hp }
+end
+
+@[simp]
+theorem none_collinear_iff_empty_2' (s : set α) :
+  (∀ p q ∈ s, ¬ collinear p q q) ↔ s = ∅ :=
+begin
+  refine ⟨λ h, set.eq_empty_iff_forall_not_mem.mpr $ λ _, _, λ h _ _ _ hp, _⟩,
+    { intro hx, exact h _ _ hx hx (of_same _) },
+    { rw h at hp, exact (set.not_mem_empty _).elim hp }
+end
+
+@[simp]
+theorem none_collinear_iff_empty_2'' (s : set α) :
+  (∀ p q ∈ s, ¬ collinear p q p) ↔ s = ∅ :=
+begin
+  refine ⟨λ h, set.eq_empty_iff_forall_not_mem.mpr $ λ _, _, λ h _ _ _ hp, _⟩,
+    { intro hx, exact h _ _ hx hx (of_same _) },
+    { rw h at hp, exact (set.not_mem_empty _).elim hp }
+end
+
+@[simp]
+theorem none_collinear_iff_empty_fixed_1 (s : set α) (p : α) :
+  (∀ q r ∈ s, ¬ collinear p q r) ↔ s = ∅ :=
+begin
+  refine ⟨λ h, set.eq_empty_iff_forall_not_mem.mpr $ λ _, _, λ h _ _ _ hp, _⟩,
+    { intro hx, exact h _ _ hx hx (of_right _ _) },
+    { rw h at hp, exact (set.not_mem_empty _).elim hp }
+end
+
+@[simp]
+theorem none_collinear_iff_empty_fixed_1' (s : set α) (p : α) :
+  (∀ q r ∈ s, ¬ collinear q p r) ↔ s = ∅ :=
+begin
+  refine ⟨λ h, set.eq_empty_iff_forall_not_mem.mpr $ λ _, _, λ h _ _ _ hp, _⟩,
+    { intro hx, exact h _ _ hx hx (of_ends _ _) },
+    { rw h at hp, exact (set.not_mem_empty _).elim hp }
+end
+
+@[simp]
+theorem none_collinear_iff_empty_fixed_1'' (s : set α) (p : α) :
+  (∀ q r ∈ s, ¬ collinear q r p) ↔ s = ∅ :=
+begin
+  refine ⟨λ h, set.eq_empty_iff_forall_not_mem.mpr $ λ _, _, λ h _ _ _ hp, _⟩,
+    { intro hx, exact h _ _ hx hx (of_left _ _) },
+    { rw h at hp, exact (set.not_mem_empty _).elim hp }
+end
+
+@[simp]
+theorem none_collinear_iff_empty_fixed_2 (s : set α) (p q : α)
+  (hq : q ∈ s) : (∀ r ∈ s, ¬ collinear p q r) ↔ s = ∅ :=
+begin
+  refine ⟨λ h, set.eq_empty_iff_forall_not_mem.mpr $ λ _, _, λ h _ hp, _⟩,
+    { intro hx, exact h _ hq (of_right _ _) },
+    { rw h at hp, exact (set.not_mem_empty _).elim hp }
+end
+
+@[simp]
+theorem none_collinear_iff_empty_fixed_2' (s : set α) (p q : α)
+  (hq : q ∈ s) : (∀ r ∈ s, ¬ collinear p r q) ↔ s = ∅ :=
+begin
+  refine ⟨λ h, set.eq_empty_iff_forall_not_mem.mpr $ λ _, _, λ h _ hp, _⟩,
+    { intro hx, exact h _ hq (of_right _ _) },
+    { rw h at hp, exact (set.not_mem_empty _).elim hp }
+end
+
+@[simp]
+theorem none_collinear_iff_empty_fixed_2'' (s : set α) (p q : α)
+  (hq : q ∈ s) : (∀ r ∈ s, ¬ collinear r p q) ↔ s = ∅ :=
+begin
+  refine ⟨λ h, set.eq_empty_iff_forall_not_mem.mpr $ λ _, _, λ h _ hp, _⟩,
+    { intro hx, exact h _ hq (of_ends _ _) },
+    { rw h at hp, exact (set.not_mem_empty _).elim hp }
+end
 
 end collinear
 
@@ -408,7 +494,7 @@ theorem indep_def (p : α) (s : set α) :
 rfl
 
 theorem not_indep_of_mem {p : α} {s : set α} (hp : p ∈ s) : ¬ lin_indep p s :=
-λ h, (h p p hp hp) $ collinear.of_same p
+λ h, h p p hp hp $ collinear.of_same p
 
 theorem not_mem_of_indep {p : α} {s : set α} (hp : lin_indep p s) : p ∉ s :=
 λ h, not_indep_of_mem h hp
