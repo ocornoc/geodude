@@ -203,12 +203,16 @@ begin
   exact lin_indep.not_indep_of_mem (convex_hull.of_set hp₁) hp
 end
 
-theorem not_all_in_space {d : ℕ} : ¬ ∀ {vs : vector α (d + 2)},
+theorem not_all_in_space' (d : ℕ) : ¬ ∀ {vs : vector α (d + 1)},
   nondegen_simplex vs.val → ∀ v₁, ∃ v₂ v₃ ∈ convex_hull {p | p ∈ vs.val},
     collinear v₁ v₂ v₃ :=
 begin
-  intro h,
-
+  intro hvs,
+  rcases ex_nondegen_simplex (d + 1) with ⟨vs, hl⟩,
+  cases ordered_geo_inf.inf_dimality vs with w hw,
+  rcases hvs hl w with ⟨_, _, hp, hq, hpq⟩,
+  apply hw _ _ hp hq,
+  rwa ←collinear.rotate_iff
 end
 
 end ordered_geo_inf
