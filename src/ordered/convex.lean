@@ -35,8 +35,7 @@ namespace convex_hull
 theorem mem_iff {s : set α} (x : α) :
   x ∈ convex_hull s ↔ x ∈ s ∨ ∃ (v₁ v₂ ∈ convex_hull s), x ∈ interval v₁ v₂ :=
 begin
-  split,
-  all_goals { intro h },
+  refine ⟨λ h, _, λ h, _⟩,
     { rcases h with ⟨_, h⟩ | ⟨_, _, _, hv₁, hv₂, h⟩,
         { exact or.inl h },
         { exact or.inr ⟨_, _, hv₁, hv₂, h⟩ }},
@@ -53,10 +52,7 @@ mem_iff x
 @[simp]
 theorem idempotent (s : set α) : convex_hull (convex_hull s) = convex_hull s :=
 begin
-  funext,
-  apply propext,
-  split,
-  all_goals { intro h },
+  apply set.eq_of_subset_of_subset (λ _ h, _) (λ _ h, _),
     { induction h with _ _ _ _ _ _ _ h hv₁ hv₂,
         { assumption },
         { exact intrv hv₁ hv₂ h }},
@@ -98,8 +94,7 @@ by rw is_convex.convex_def at hs ht; rwa [hs, ht]
 @[simp]
 theorem of_empty : @convex_hull α _ ∅ = ∅ :=
 begin
-  apply set.eq_of_subset_of_subset _ (self_subs_hull _),
-  intros _ h,
+  apply set.eq_of_subset_of_subset (λ _ h, _) (self_subs_hull _),
   induction h with _ _ _ _ _ _ _ _ h, { assumption },
   exact (set.not_mem_empty _) h
 end
@@ -115,15 +110,10 @@ end
 @[simp]
 theorem of_singleton (p : α) : @convex_hull α _ {p} = {p} :=
 begin
-  funext,
-  apply propext,
-  split,
-  all_goals { intro h },
-    { induction h with _ h₂ _ _ _ _ _ h hv₁ hv₂, { assumption },
-      rw [←@set.mem_def _ _ {p}, set.mem_singleton_iff] at hv₁ hv₂,
-      rw [hv₁, hv₂] at h,
-      exact interval.eq_of_mem_same h },
-    { exact of_set h }
+  apply set.eq_of_subset_of_subset (λ _ h, _) (λ _, of_set),
+  induction h with _ h₂ _ _ _ _ _ h hv₁ hv₂, { assumption },
+  rw [set.mem_singleton_iff] at hv₁ hv₂, rw [hv₁, hv₂] at h,
+  exact interval.eq_of_mem_same h
 end
 
 end convex_hull
@@ -167,17 +157,11 @@ end
 theorem iff_mem_intrv_iff_convex (s : set α) :
   is_convex s ↔ ∀ {x}, x ∈ s ↔ ∃ v₁ v₂ ∈ s, x ∈ interval v₁ v₂ :=
 begin
-  apply iff.intro iff_mem_intrv_of_convex,
-  intros hs,
-  rw convex_def,
-  funext,
-  apply propext,
-  split,
-  all_goals { intro h },
-    { induction h with _ h₂ _ _ _ _ _ h hv₁ hv₂,
-        { assumption },
-        { exact hs.mpr ⟨_, _, hv₁, hv₂, h⟩ }},
-    { exact convex_hull.of_set h }
+  apply iff.intro iff_mem_intrv_of_convex (λ hs, _),
+  apply set.eq_of_subset_of_subset (λ _ h, _) (λ _, convex_hull.of_set),
+  induction h with _ h₂ _ _ _ _ _ h hv₁ hv₂,
+      { assumption },
+      { exact hs.mpr ⟨_, _, hv₁, hv₂, h⟩ }
 end
 
 end is_convex
