@@ -15,12 +15,12 @@ parameters {α : Type u} [has_betweenness α]
     This is a generalization of "there are two distinct points", "for any given
     line there's a point that's not collinear to it", "for any given plane
     there's a point that's not coplanar to it", etc. -/
-def dimensionality (d : ℕ) (vs : vector α d.succ) : Prop :=
+def dimensionality {d : ℕ} (vs : vector α d.succ) : Prop :=
 ∃ p, lin_indep p $ convex_hull {z | z ∈ vs.val}
 
 @[simp]
-theorem dimensionality.dim_def (d : ℕ) (vs : vector α d.succ) :
-  dimensionality d vs = ∃ p, lin_indep p $ convex_hull {z | z ∈ vs.val} :=
+theorem dimensionality.dim_def {d : ℕ} (vs : vector α d.succ) :
+  dimensionality vs = ∃ p, lin_indep p $ convex_hull {z | z ∈ vs.val} :=
 rfl
 
 /-- A simplex is nondegenerate iff, for every two endpoints and point `p`, if
@@ -52,7 +52,7 @@ class {u} ordered_geo_nodim (α : Type u) extends has_betweenness α, inhabited 
     axioms of dimensionality apply for any nonempty list of points at most
     `d+1` long. -/
 class {u} ordered_geo (α : Type u) (d : ℕ) extends ordered_geo_nodim α :=
-(dimality {d' : ℕ} (h : d' < d) (vs : vector α d'.succ) : dimensionality d' vs)
+(dimality {d' : ℕ} (h : d' < d) (vs : vector α d'.succ) : dimensionality vs)
 
 /-- Ordered geometry with a finite dimension `d`. This finiteness is shown by
     the property that every non-degenerate convex hull of `d` vertices has two
@@ -64,7 +64,7 @@ class {u} ordered_geo_fin (α : Type u) (d : ℕ) extends ordered_geo α d :=
 /-- An infinite ordered geometry, with the property that the axiom of
     dimensionality holds for any dimension. -/
 class {u} ordered_geo_inf (α : Type u) extends ordered_geo_nodim α :=
-(inf_dimality {d : ℕ} (vs : vector α d.succ) : dimensionality d vs)
+(inf_dimality {d : ℕ} (vs : vector α d.succ) : dimensionality vs)
 
 section
 universe u
