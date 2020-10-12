@@ -31,8 +31,8 @@ l.nodup ∧ ∀ v₁ v₂ v₃ ∈ l, v₂ = v₁ ∨ v₂ = v₃ ∨ ¬ colline
 
 /-- For any set `S`, `S₁` and `S₂` form a dependent bipartition of `S` iff
     their union `S₁ ∪ S₂ = S` and there is no point in one that is between two
-    points of another. -/
-def dep_biparition (s s₁ s₂ : set α) : Prop :=
+    points of the other. -/
+def dep_bipartition (s s₁ s₂ : set α) : Prop :=
 s₁ ∪ s₂ = s ∧ (∀ p ∈ s₁, ¬ ∃ q r ∈ s₂, between q p r) ∧
   (∀ p ∈ s₂, ¬ ∃ q r ∈ s₁, between q p r)
 
@@ -44,7 +44,7 @@ class {u} ordered_geo_nodim (α : Type u) extends has_betweenness α :=
 (pasch₂ {v₁ v₂ v₃ v₄ v₅ : α} : nondegen_simplex [v₁, v₂, v₃] → between v₂ v₃ v₄ →
   between v₃ v₅ v₂ → ∃ z ∈ line v₄ v₅, between v₁ z v₂)
 (dedekind {p q : α} {s₁ s₂ : set α} : nonempty s₁ → nonempty s₂ →
-  dep_biparition (line p q) s₁ s₂ →
+  dep_bipartition (line p q) s₁ s₂ →
     (∃ v₁ ∈ s₁, ∀ (v₂ ∈ s₁ \ {v₁}) (v₃ ∈ s₂), between v₂ v₁ v₃)
     ∨ (∃ v₁ ∈ s₂, ∀ (v₂ ∈ s₂ \ {v₁}) (v₃ ∈ s₁), between v₂ v₁ v₃))
 
