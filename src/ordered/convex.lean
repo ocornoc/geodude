@@ -50,6 +50,7 @@ theorem mem_iff' {s : set α} (x : α) :
 mem_iff x
 
 /-- Taking the convex hull of a convex hull is idempotent. -/
+@[simp]
 theorem idempotent (s : set α) : convex_hull (convex_hull s) = convex_hull s :=
 begin
   funext,
