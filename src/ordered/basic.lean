@@ -178,6 +178,31 @@ begin
   exact hw _ _ hp hq hpq.rotate
 end
 
+theorem psig_nondegen_simplex [inhabited α]
+  (hlas : Π vs : list α, lindep_to_simplex_psig vs) (d : ℕ) :
+    Σ' vs : vector α d, nondegen_simplex vs.val :=
+begin
+  induction d with d hd, { exact ⟨vector.nil, nondegen_simplex.of_nil⟩ },
+  induction d with d hd,
+    { exact ⟨⟨[arbitrary α], rfl⟩, by simp, by finish⟩ },
+  rcases hd with ⟨⟨l, h⟩, hvs⟩,
+  rcases hlas l with ⟨p, hp⟩,
+  suffices : (p :: ⟨l, h⟩ : vector α _).val.nodup,
+  refine ⟨vector.cons p ⟨l, h⟩, this, λ v₁ v₂ v₃ hv₁ hv₂ hv₃, _⟩,
+  rw lin_indep at hp,
+  have : subtype.val (p :: (⟨l, h⟩ : vector _ _)) = p :: l := rfl,
+  rw [this, list.mem_cons_iff] at hv₁ hv₂ hv₃,
+  rw (rfl : subtype.val (subtype.mk l h) = l) at hvs,
+  rw collinear.none_collinear_iff_empty_fixed_1'' at hp,
+  rw [convex_hull.is_empty_iff, set.eq_empty_iff_forall_not_mem] at hp,
+  have : 0 < l.length := by rw h; exact nat.succ_pos',
+  cases list.length_pos_iff_exists_mem.mp this with w hw,
+  exact (hp _).elim hw,
+  apply list.nodup_cons_of_nodup (λ hp₁, _) hvs.left,
+  change p ∈ {z : α | z ∈ subtype.val (⟨l, h⟩ : vector α _)} at hp₁,
+  exact lin_indep.not_indep_of_mem (convex_hull.of_set hp₁) hp
+end
+
 /-- For any length `d`, there is a nondegenerate simplex with `d` vertices. -/
 theorem ex_nondegen_simplex (d : ℕ) :
   ∃ vs : vector α d, nondegen_simplex vs.val :=

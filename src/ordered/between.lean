@@ -364,15 +364,18 @@ end
 theorem swap {p q r : α} : collinear p q r → collinear q p r :=
 (swap_iff p q r).mp
 
+theorem mem_of_mem_line {p q r : α} (h : p ∈ line q r) : collinear q r p :=
+⟨q, r, by simp, by simp, h⟩
+
 theorem mem_of_mem_ray {p q r : α} (h : p ∈ ray q r) : collinear q r p :=
-⟨q, r, by simp, by simp, line.ray_subs _ _ h⟩
+mem_of_mem_line $ line.ray_subs _ _ h
 
 theorem mem_of_mem_ray' {p q r : α} (h : p ∈ ray r q) : collinear q r p :=
-⟨r, q, by simp, by simp, line.ray_subs _ _ h⟩
+mem_of_mem_line $ line.ray_subs' _ _ h
 
 theorem mem_of_mem_intrv {p q r : α} (h : p ∈ interval q r) :
   collinear q r p :=
-⟨q, r, by simp, by simp, line.intrv_subs _ _ h⟩
+mem_of_mem_line $ line.intrv_subs _ _ h
 
 theorem rotate' {p q r : α} (h : collinear p q r) : collinear r p q :=
 begin
@@ -502,6 +505,10 @@ theorem not_mem_of_indep {p : α} {s : set α} (hp : lin_indep p s) : p ∉ s :=
 theorem ne_of_indep {p : α} {s : set α} (hp : lin_indep p s) :
   ∀ q ∈ s, p ≠ q :=
 λ _ hq h, by induction h; exact not_mem_of_indep hp hq
+
+theorem not_indep_of_collin {p q r : α} {s : set α} (hp : p ∈ s) (hq : q ∈ s)
+  (h : collinear p q r) : ¬ lin_indep r s :=
+by rw indep_def; push_neg; exact ⟨_, _, hp, hq, h⟩
 
 end lin_indep
 end
