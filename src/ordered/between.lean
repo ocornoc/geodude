@@ -3,7 +3,7 @@
   License available in the LICENSE file.
 -/
 
-import data.set tactic
+import data.set.basic tactic
 
 private lemma {u} set_ins_comm {α : Type u} (x y : α) :
   ({x, y} : set α) = {y, x} :=
@@ -91,10 +91,6 @@ def line (x y : α) : set α := interval x y ∪ ray x y ∪ ray y x
 def collinear (p q r : α) : Prop :=
 ∃ v₀ v₁, p ∈ line v₀ v₁ ∧ q ∈ line v₀ v₁ ∧ r ∈ line v₀ v₁
 
-/-- `p` is linearly independent from any two points in `s`. -/
-def lin_indep (p : α) (s : set α) : Prop :=
-∀ l r ∈ s, ¬ collinear l r p
-
 end
 
 section
@@ -117,6 +113,9 @@ between.not_between_self _ _
 
 theorem swap (x y : α) : segment x y = segment y x :=
 by dsimp; congr; funext; rw between.symm_iff
+
+lemma symm {p q r : α} (h : r ∈ segment p q) : r ∈ segment q p :=
+by rwa swap at h
 
 theorem subs_intrv (x y : α) : segment x y ⊆ interval x y :=
 λ _, or.inl
@@ -277,6 +276,13 @@ segment.seg_subs_ray _ _
 theorem seg_ssubs (x y : α) : segment x y ⊂ ray x y :=
 segment.seg_ssubs_ray _ _
 
+theorem eq_of_mem_same {x y : α} (h : x ∈ ray y y) : x = y :=
+by rw single_self at h; exact h
+
+@[simp]
+theorem eq_iff_mem_same (x y : α) : x ∈ ray y y ↔ x = y :=
+⟨eq_of_mem_same, λ h, by simp [h]⟩
+
 end ray
 
 namespace line
@@ -330,6 +336,18 @@ by finish using between.symm_iff
 theorem rotate_iff_of_ne {x y z : α} :
   x ≠ z → y ≠ z → (x ∈ line y z ↔ y ∈ line x z) :=
 λ h₁ h₂, ⟨rotate_of_ne h₁, rotate_of_ne h₂⟩
+
+theorem eq_of_mem_same {x y : α} (h : x ∈ line y y) : x = y :=
+begin
+  rcases h with ⟨h | h⟩ | h,
+    { exact interval.eq_of_mem_same h },
+    { exact ray.eq_of_mem_same h },
+    { exact ray.eq_of_mem_same h }
+end
+
+@[simp]
+theorem eq_iff_mem_same (x y : α) : x ∈ line y y ↔ x = y :=
+⟨eq_of_mem_same, λ h, by simp [h]⟩
 
 end line
 
@@ -389,6 +407,9 @@ rotate' ∘ rotate'
 
 theorem rotate_iff {p q r : α} : collinear p q r ↔ collinear q r p :=
 ⟨rotate, rotate'⟩
+
+theorem swap_iff' (p q r : α) : collinear p q r ↔ collinear p r q :=
+by rw [rotate_iff, swap_iff _ r q, rotate_iff]
 
 theorem of_left' (p q : α) : collinear p p q :=
 (of_ends _ _).rotate'
@@ -488,27 +509,4 @@ begin
 end
 
 end collinear
-
-namespace lin_indep
-
-@[simp]
-theorem indep_def (p : α) (s : set α) :
-  lin_indep p s = ∀ l r ∈ s, ¬ collinear l r p :=
-rfl
-
-theorem not_indep_of_mem {p : α} {s : set α} (hp : p ∈ s) : ¬ lin_indep p s :=
-λ h, h p p hp hp $ collinear.of_same p
-
-theorem not_mem_of_indep {p : α} {s : set α} (hp : lin_indep p s) : p ∉ s :=
-λ h, not_indep_of_mem h hp
-
-theorem ne_of_indep {p : α} {s : set α} (hp : lin_indep p s) :
-  ∀ q ∈ s, p ≠ q :=
-λ _ hq h, by induction h; exact not_mem_of_indep hp hq
-
-theorem not_indep_of_collin {p q r : α} {s : set α} (hp : p ∈ s) (hq : q ∈ s)
-  (h : collinear p q r) : ¬ lin_indep r s :=
-by rw indep_def; push_neg; exact ⟨_, _, hp, hq, h⟩
-
-end lin_indep
 end

@@ -1,8 +1,8 @@
 [package]
 name = "geodude"
 version = "0.1"
-lean_version = "leanprover-community/lean:3.18.4"
+lean_version = "leanprover-community/lean:3.30.0"
 path = "src"
 
 [dependencies]
-mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "c444a005b6ff56478cea019ba273e9ee7ce8a52e"}
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "132328c4dd48da87adca5d408ca54f315282b719"}
