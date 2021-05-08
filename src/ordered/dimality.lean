@@ -78,8 +78,7 @@ def basis_card {s : set α} (h : is_affine s) : cardinal :=
 theorem all_bases_same_card {s : set α} {h : is_affine s} (b : bases h) : #b = basis_card h :=
 begin
   rcases b with ⟨⟨g, hg⟩, hbg⟩,
-  have : nonempty (bases h) := infer_instance,
-  let b' := this.some,
+  let b' := (infer_instance : nonempty $ bases h).some,
   change #g = #b',
   exact le_antisymm (hbg b'.val b'.val.property) (b'.property g hg)
 end
