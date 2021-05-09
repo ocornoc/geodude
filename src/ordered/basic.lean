@@ -109,7 +109,7 @@ begin
 end
 
 theorem not_generator_of_less {d' : cardinal} (hd : d' < d) {s : set α} (hd' : #s = d') :
-  s ∉ generators (@set.univ α) is_affine.univ :=
+  ¬(generates s _ is_affine.univ) :=
 ne_of_lt $ basis_min_card hd hd'
 
 end

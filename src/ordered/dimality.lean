@@ -14,31 +14,30 @@ theorem generates.of_span {s : set α} (h : is_affine s) : generates s s h :=
 h
 
 @[reducible]
-def generators (s : set α) (h : is_affine s) : set (set α) :=
+def generators {s : set α} (h : is_affine s) : set (set α) :=
 {b | generates b s h}
 
 namespace generators
 
-theorem self_gens {s : set α} : ∀ h, s ∈ generators s h :=
+theorem self_gens {s : set α} : ∀ h : is_affine s, s ∈ generators h :=
 generates.of_span
 
-theorem is_nonempty {s : set α} (h : is_affine s) : (generators s h).nonempty :=
+theorem is_nonempty {s : set α} (h : is_affine s) : (generators h).nonempty :=
 ⟨s, self_gens h⟩
 
 end generators
 
 @[reducible]
-def is_basis (s : set α) (h : is_affine s) (b : generators s h) : Prop :=
-∀ b' ∈ generators s h, #b ≤ #b'
+def is_basis {s : set α} {h : is_affine s} (b : generators h) : Prop :=
+∀ b' ∈ generators h, #b ≤ #b'
 
 @[reducible]
-def bases : Π {s} h, set (generators s h) :=
+def bases {s : set α} (h : is_affine s) : set (@generators s h) :=
 is_basis
 
 end
 
-protected def {u} bases.univ (α : Type u) [has_betweenness α] :
-  set (generators set.univ is_affine.univ) :=
+protected def {u} bases.univ (α : Type u) [has_betweenness α] : set (generators is_affine.univ) :=
 @bases α _ _ _
 
 section
@@ -58,9 +57,9 @@ namespace bases
 
 theorem is_nonempty {s : set α} (h : is_affine s) : (bases h).nonempty :=
 begin
-  have gne : (@set.univ $ generators s h).nonempty,
+  have gne : (@set.univ $ generators h).nonempty,
     { cases generators.is_nonempty h with w h, exact ⟨⟨w, h⟩, trivial⟩ },
-  let f := λ l r : generators s h, #l < #r,
+  let f := λ l r : generators h, #l < #r,
   rcases well_founded.has_min (inv_image.wf _ cardinal.wf) _ gne with ⟨b, _, hb⟩,
   refine ⟨b, λ b' hb', _⟩,
   specialize hb ⟨b', hb'⟩ trivial,
